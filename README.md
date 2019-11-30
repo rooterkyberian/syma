@@ -1,6 +1,17 @@
 # syma
 Syma X22W hacking
 
+## Syma X22W Hardware
+
+Board SoCs:
+* microcontroller: STM32F031K6
+* IMU: InvenSense
+* wifi: ?
+
+
+Potato-quality board pics:
+![Syma X22W board top](./images/syma_x22w_board_top.png)
+![Syma X22W board bottom](./images/syma_x22w_board_bottom.png)
 
 ## Syma X22W protocol
 

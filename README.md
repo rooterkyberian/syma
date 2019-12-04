@@ -17,7 +17,7 @@ Board SoCs:
 * microcontroller (flight controller): STM32F031K6
 * IMU: InvenSense MPU6050A - strangely enough it doesn't seem to have barometer while drone does have attitude control
 
-Camera daughter board (FPV board; Wifi RX):
+Camera daughter board - Joyhonest (FPV board; Wifi RX):
 * WiFi SoC: Marvell 88W8801-NMD2
 
 Camera daughter board is connected by 3-pin cable (RX, Vcc, GND) to main board.
@@ -30,6 +30,19 @@ Potato-quality board pics:
 ![Syma X22W board bottom](./images/syma_x22w_board_bottom.png)
 ![Syma X22W fpv board top](./images/syma_x22w_fpv_board_top.png)
 ![Syma X22W fpv board bottom](./images/syma_x22w_fpv_board_bottom.png)
+
+## Android app
+
+Either Syma Go or Go+ seems to work.
+Decompiling [Syma Go](http://www.symatoys.com/downshow/Syma-Go-apk-download.html) with [Jadx](https://github.com/skylot/jadx) reveals following:
+* presence of Joyhonest SDK indicated camera daughter board responsible for WiFi connectivity is produced by them. This makes `sources/com/joyhonest` directory the treasure trove for protocol reverse engineering efforts.
+* `com.tomdxs.symago.OldlibStartActivity` contains logic for building 10-byte command packets - but as name suggests - this is likely old code for a different hardware
+* per `com.tomdxs.symago.WifiStateReceiver` android app assumes
+  * we are connected to a drone only if your IP is in 172.16.10.0/24 subnet or some specific subnets of 192.168.0.0/24
+  * drone wifi ssid should always starts `FPV_`
+* there are some mentions of RTSP - but once again it seems that was used with other drones
+* among other things there are binaries such as `jh_wifi.so` which are harder to decompile and very well can contain the protocol details
+
 
 ## Syma X22W protocol
 
@@ -52,15 +65,51 @@ Following payloads should be sent over UDP from :6666 to 172.16.10.1:5555 .
 
 init
 00
+
+For everything else `436d640001001200010404000a000000` seems to be a common prefix, leaving 11 bytes to work with.
+
 normal
-436d640001001200010404000a000000808080802020202000550f
+808080802020202000550f
 turn off
-436d640001001200010404000a000000808080802020202010652f
+808080802020202010652f
 turn on
-436d640001001200010404000a000000808080802020202010652f
+808080802020202010652f
 land
-436d640001001200010404000a0000008080808020202020085d1f
+8080808020202020085d1f
 lift
-436d640001001200010404000a000000808080802020206000958f
+808080802020206000958f
 calibrate
-436d640001001200010404000a000000808080802020202020754f
+808080802020202020754f
+high rotation speed
+8080808020a0202000d50f
+high speed mode?
+808080802020a0a000550f
+
+```
+IDLE
+ 0 1 2 3 4 5 6 7 8 910 
+808080802020202000550f
+RUDD TRIMMER = 1
+8080808020202120005611
+            ^^    ^^^^
+RUDD TRIMMER = 2
+8080808020202220005713
+            ^^    ^^^^
+AILE TRIMMER = 1
+8080808020202021005611
+              ^^  ^^^^
+ELEV TRIMMER = 1
+8080808020212020005611
+          ^^      ^^^^
+```
+Bytes:
+ B | NAME | NORMAL | HIGH | LOW
+ 0 | THRO |     80 |   ff |  00
+ 1 | ELEV |     80 |   7f |  00
+ 2 | RUDD |     80 |   ff |  7f
+ 4 | AILE |     80 |   ff |  7f
+
+the boundary value of 7f likely means that we are dealing with `signed char` (-127 == 0x7f, 127)
+
+Byte 9 is xor of previous bytes.
+Byte 10 is just a sum of all previous bytes.

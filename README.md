@@ -1,6 +1,16 @@
 # syma
 Syma X22W hacking
 
+## Scripting
+
+    pipenv install --dev
+    pipenv shell
+    
+    # to read commands from pcap
+    python tools/sniff_cmds.py --offline dumps/syma_x22w_basic_cmds.pcapng
+    
+    # or sniff some new ones
+
 ## Syma X22W Hardware
 
 Board SoCs:

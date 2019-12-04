@@ -107,14 +107,25 @@ ELEV TRIMMER = 1
 8080808020212020005611
           ^^      ^^^^
 ```
-Bytes:
+
+```
+Bytes writeup:
  B | NAME | NORMAL | HIGH | LOW
  0 | THRO |     80 |   ff |  00
  1 | ELEV |     80 |   7f |  00
  2 | RUDD |     80 |   ff |  7f
- 4 | AILE |     80 |   ff |  7f
+ 3 | AILE |     80 |   ff |  7f
 
-the boundary value of 7f likely means that we are dealing with `signed char` (-127 == 0x7f, 127)
+ 4 | ?
+ 5 | ELEV TRIM
+ 6 | RUDD TRIM
+ 7 | AILE TRIM
+ 8 | SPECIAL CMD?
+ 9 | CHECKSUM0 | ?
+10 | CHECKSUM1 | Sum of all previous 26 bytes
+```
 
-Byte 9 is xor of previous bytes.
+the boundary value of 7f likely means that we are dealing with `signed char`.
+
+Byte 9 is ???
 Byte 10 is just a sum of all previous bytes.

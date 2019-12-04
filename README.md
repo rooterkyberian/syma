@@ -63,11 +63,15 @@ From the hardware and UDP traffic it seems there is no telemetry transmitted ove
 
 Following payloads should be sent over UDP from :6666 to 172.16.10.1:5555 .
 
+The payload of the first packet is just single byte with zero:
+```
 init
 00
+```
 
 For everything else `436d640001001200010404000a000000` seems to be a common prefix, leaving 11 bytes to work with.
 
+```
 normal
 808080802020202000550f
 turn off
@@ -84,6 +88,7 @@ high rotation speed
 8080808020a0202000d50f
 high speed mode?
 808080802020a0a000550f
+```
 
 ```
 IDLE

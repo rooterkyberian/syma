@@ -3,8 +3,8 @@ Syma X22W hacking
 
 ## Scripting
 
-    pipenv install --dev
-    pipenv shell
+    rye sync
+    . .venv/bin/activate
     
     # to read commands from pcap
     python tools/sniff_cmds.py --offline dumps/syma_x22w_basic_cmds.pcapng

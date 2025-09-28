@@ -13,7 +13,6 @@ def _c(cmd: str) -> bytes:
 
 
 def checksum(msg: bytes) -> bytes:
-    msg = msg[: MSG_LEN - 2]
     b9 = reduce(operator.xor, msg, 0xB9) & 0xFF
     b10 = reduce(operator.add, msg, b9) & 0xFF
     return bytes((b9, b10))

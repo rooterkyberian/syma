@@ -34,4 +34,4 @@ CAPTURED_PAYLOADS = [bytes.fromhex(p) for p in _CAPTURED_PAYLOADS]
 
 @pytest.mark.parametrize("payload", CAPTURED_PAYLOADS)
 def test_checksum(payload):
-    assert payload[-2:].hex() == checksum(payload).hex()
+    assert payload[-2:].hex() == checksum(payload[:-2]).hex()

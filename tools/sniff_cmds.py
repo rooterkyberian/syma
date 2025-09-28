@@ -3,6 +3,7 @@
 """
 Colorful readout of commands from pcap(ng) file
 """
+
 import datetime
 import operator
 import pathlib
@@ -67,7 +68,6 @@ def setup_monitor(iface: str):
 
 
 def sniff_cmds(iface: str = None, offline: str = None):
-
     if iface:
         setup_monitor(iface)
     pkts_stream = sniff_gen(offline=offline, iface=iface)

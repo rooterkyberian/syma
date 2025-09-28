@@ -1,14 +1,17 @@
 # syma
 Syma X22W hacking
 
-## Scripting
+## Setup
 
-    rye sync
-    . .venv/bin/activate
-    
+    mise install
+    uv sync
+    source .venv/bin/activate
+
+## Usage
+
     # to read commands from pcap
     python tools/sniff_cmds.py --offline dumps/syma_x22w_basic_cmds.pcapng
-    
+
     # or sniff some new ones
 
 ## Syma X22W Hardware

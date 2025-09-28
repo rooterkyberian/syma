@@ -41,7 +41,6 @@ def search_n_destroy(iface: str):
         if UDP in pkt:
             dgram = pkt[UDP]
             if dgram.dport == 5555:
-
                 frame = (
                     RadioTap()
                     / Dot11FCS(

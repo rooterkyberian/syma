@@ -69,7 +69,6 @@ def send_asso_req(client_mac, bssid, ssid):
 
 
 def search_n_destroy(iface: str):
-
     setup_monitor(iface)
     pkts_stream = sniff_gen(iface=iface)
 

@@ -4,6 +4,7 @@ from functools import reduce
 MSG_LEN = 27
 IDLE = bytes.fromhex("436d640001001200010404000a000000808080802020202000550f")
 CMD_PREFIX = IDLE[:-11]
+_CHECKSUM0_INIT = 0x55
 
 
 def _c(cmd: str) -> bytes:
@@ -13,8 +14,14 @@ def _c(cmd: str) -> bytes:
 
 
 def checksum(msg: bytes) -> bytes:
-    b9 = reduce(operator.xor, msg, 0xB9) & 0xFF
-    b10 = reduce(operator.add, msg, b9) & 0xFF
+    """Calculate dual-byte checksum for a 25-byte message (excluding checksum bytes).
+
+    CHECKSUM0: XOR all 9 payload data bytes (msg[16:25]), then add 0x55.
+    CHECKSUM1: Sum of all 26 preceding bytes (msg[0:25] + CHECKSUM0).
+    """
+    payload_xor = reduce(operator.xor, msg[len(CMD_PREFIX) :], 0)
+    b9 = (_CHECKSUM0_INIT + payload_xor) & 0xFF
+    b10 = (sum(msg) + b9) & 0xFF
     return bytes((b9, b10))
 
 

@@ -124,11 +124,24 @@ Bytes writeup:
  6 | RUDD TRIM
  7 | AILE TRIM
  8 | SPECIAL CMD?
- 9 | CHECKSUM0 | ?
-10 | CHECKSUM1 | Sum of all previous 26 bytes
+ 9 | CHECKSUM0 | 0x55 + XOR(bytes 0-8)
+10 | CHECKSUM1 | Sum of all previous 26 bytes (bytes 0-9 of payload + 16-byte prefix)
 ```
 
 the boundary value of 7f likely means that we are dealing with `signed char`.
 
-Byte 9 is ???
-Byte 10 is just a sum of all previous bytes.
+### Checksum algorithm
+
+The last 2 bytes of each 27-byte command packet form a dual-byte checksum over the preceding 25 bytes:
+
+**CHECKSUM0** (byte 9 of payload / byte 25 of packet):
+```
+CHECKSUM0 = (0x55 + XOR(payload_data[0:9])) & 0xFF
+```
+XOR together the 9 payload data bytes (bytes 16-24 of the packet), then add the constant `0x55`.
+
+**CHECKSUM1** (byte 10 of payload / byte 26 of packet):
+```
+CHECKSUM1 = sum(packet[0:26]) & 0xFF
+```
+Simple 8-bit sum of all 26 preceding bytes (including CHECKSUM0).

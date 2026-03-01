@@ -19,6 +19,7 @@ requires-python = ">= 3.12"
 dev = [
     "ipython>=8.26.0",
     "pytest>=8.3.2",
+    "pytest-asyncio>=0.24.0",
     "ruff>=0.8.0",
 ]
 

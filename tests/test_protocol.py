@@ -1,6 +1,15 @@
 import pytest
 
-from syma import checksum
+from syma import (
+    LIFT_TRIM_THROTTLE,
+    MSG_LEN,
+    SPECIAL_CALIBRATE,
+    SPECIAL_LAND,
+    SPECIAL_POWER_TOGGLE,
+    SymaMSGs,
+    build_command,
+    checksum,
+)
 
 _CAPTURED_PAYLOADS = """
 436d640001001200010404000a000000802f80da20202020004a0d
@@ -35,3 +44,34 @@ CAPTURED_PAYLOADS = [bytes.fromhex(p) for p in _CAPTURED_PAYLOADS]
 @pytest.mark.parametrize("payload", CAPTURED_PAYLOADS)
 def test_checksum(payload):
     assert payload[-2:].hex() == checksum(payload[:-2]).hex()
+
+
+def test_build_command_idle():
+    assert build_command() == SymaMSGs.IDLE
+
+
+@pytest.mark.parametrize(
+    "special, expected",
+    [
+        (SPECIAL_POWER_TOGGLE, SymaMSGs.POWER_TOGGLE),
+        (SPECIAL_LAND, SymaMSGs.LAND),
+        (SPECIAL_CALIBRATE, SymaMSGs.CALIBRATE),
+    ],
+)
+def test_build_command_special(special, expected):
+    assert build_command(special=special) == expected
+
+
+def test_build_command_lift():
+    assert build_command(trim_throttle=LIFT_TRIM_THROTTLE) == SymaMSGs.LIFT
+
+
+def test_build_command_length():
+    assert len(build_command()) == MSG_LEN
+
+
+def test_build_command_custom_axes():
+    cmd = build_command(throttle=0xC0, elevator=0x40, rudder=0xA0, aileron=0x60)
+    assert len(cmd) == MSG_LEN
+    # Verify checksum is valid
+    assert cmd[-2:] == checksum(cmd[:-2])

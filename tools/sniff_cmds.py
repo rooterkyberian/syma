@@ -5,11 +5,9 @@ Colorful readout of commands from pcap(ng) file
 """
 
 import datetime
-import operator
 import pathlib
 import queue
 import subprocess
-from functools import reduce
 from io import StringIO
 from itertools import zip_longest
 
@@ -19,6 +17,8 @@ from scapy.layers.inet import UDP
 from scapy.packet import Raw
 from scapy.sendrecv import AsyncSniffer
 from scapy.themes import DefaultTheme
+
+from syma import MSG_LEN, checksum
 
 color_theme = DefaultTheme()
 
@@ -93,17 +93,16 @@ def sniff_cmds(iface: str = None, offline: str = None):
                 + bytesdiff(payload[len(prefix) :], prev[len(prefix) :])
             )
 
-        b9 = 0x00
-        b10 = reduce(operator.add, payload[:-1], b9) & 0xFF
-        expected_checksum = bytes((b9, b10))
-        if expected_checksum == payload[-2:]:
-            print("Correct checksum")
-        else:
-            print(
-                color_theme.red(
-                    f"Incorrect checksum, expected {expected_checksum.hex()}"
+        if len(payload) == MSG_LEN:
+            expected_checksum = checksum(payload[:-2])
+            if expected_checksum == payload[-2:]:
+                print("Correct checksum")
+            else:
+                print(
+                    color_theme.red(
+                        f"Incorrect checksum, expected {expected_checksum.hex()}"
+                    )
                 )
-            )
         prev = payload
 
 

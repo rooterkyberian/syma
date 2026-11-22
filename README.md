@@ -14,6 +14,42 @@ Syma X22W hacking
 
     # or sniff some new ones
 
+## Layout
+
+* `syma/` - library, responsible solely for the drone protocol: building command
+  packets (`syma`), stick encoding (`syma.axes`), the video framing (`syma.video`)
+  and a UDP client (`syma.controller`)
+* `app/` - `syma-app`, a PySide6/QML desktop app for flying the drone, built on the library
+* `tools/` - sniffing / jamming scripts
+
+## Flying the drone
+
+    uv sync --all-packages
+    uv run --package syma-app syma-app
+
+Pick the network interface that should talk to the drone, then **Connect**.
+All drone traffic is bound to that interface, so the drone can sit on a second
+(e.g. USB) Wi-Fi card while your main one stays on the internet.
+If the selected card is a Wi-Fi card that is not on the drone's network yet,
+**Connect** first joins the drone's `FPV_*` network through NetworkManager,
+without making it the default route.
+
+Sticks can be dragged with the mouse, or use the keyboard: `W`/`S` throttle,
+`A`/`D` rudder, arrow keys elevator/aileron, `R`/`F` arm, `T` take off, `L` land,
+`C` calibrate, `Space`/`Esc` emergency stop.
+
+The camera's live view sits between the sticks and starts by itself once the drone
+answers; it is decoded with [PyAV](https://pyav.org/).
+
+The drone's lights keep flashing until it is armed: connect, then press one of the
+**Arm** buttons before taking off. Like the real controller, they hold both sticks
+in their bottom corners for a moment - towards each other (`R`) or apart (`F`).
+
+To record what the official app does (e.g. to arm), put a spare Wi-Fi card into
+monitor mode and watch the phone talk to the drone:
+
+    sudo .venv/bin/python tools/capture_arming.py <interface>
+
 ## Syma X22W Hardware
 
 Board SoCs:
@@ -61,6 +97,28 @@ UDP ports:
 Command packet is always 27 Bytes, each starting with "Cmd" 3-byte preable leaving 24B for rest of the message.
 
 From the hardware and UDP traffic it seems there is no telemetry transmitted over WiFi.
+
+### Video stream
+
+Once it hears commands, the drone sends 640x480 H.264 (Main profile, 25 fps, a keyframe
+every ~5 frames) from its port 6666 back to the port the commands come from. As the
+commands go to port 5555, a stateful firewall (ufw, firewalld) does not take the video
+for a reply and drops it; `SymaController` therefore sends an empty datagram to the
+drone's port 6666 every second, which makes the video part of a flow we started. Every frame is a single UDP
+datagram - bigger than the MTU, so it arrives as IP fragments - made of a 48-byte
+little-endian header followed by an Annex B access unit (`syma.video.parse_frame`):
+
+```
+ B  | CONTENT
+  0 | magic 05 0f 0f
+  3 | 51 = keyframe (SPS + PPS + IDR), 50 = predicted frame
+  5 | frame counter, wraps at 256
+ 16 | u32 payload length
+ 20 | u32 timestamp in microseconds
+ 32 | u16 width, u16 height
+ 40 | u32 payload length (again), u32 0x14
+ 48 | H.264, starting with 00 00 00 01
+```
 
 ### Sample command payloads
 

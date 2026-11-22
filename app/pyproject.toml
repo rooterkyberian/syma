@@ -1,0 +1,20 @@
+[project]
+name = "syma-app"
+version = "0.1.0"
+description = "Desktop app for flying the Syma X22W"
+dependencies = [
+    "syma",
+    "PySide6-Essentials>=6.7",
+    "av>=14",
+]
+requires-python = ">= 3.12"
+
+[project.gui-scripts]
+syma-app = "syma_app.__main__:main"
+
+[tool.uv.sources]
+syma = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

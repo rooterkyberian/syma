@@ -6,11 +6,7 @@ authors = [
     { name = "Maciej Urbanski", email = "rooter@kyberian.net" }
 ]
 dependencies = [
-    "fire>=0.6.0",
     "asyncio-dgram>=2.2.0",
-    "scapy>=2.5.0",
-    "pyx>=0.16",
-    "matplotlib>=3.9.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
@@ -22,6 +18,19 @@ dev = [
     "pytest-asyncio>=0.24.0",
     "ruff>=0.8.0",
 ]
+# for the scripts in tools/
+tools = [
+    "fire>=0.6.0",
+    "scapy>=2.5.0",
+    "pyx>=0.16",
+    "matplotlib>=3.9.2",
+]
+
+[tool.uv]
+default-groups = ["dev", "tools"]
+
+[tool.uv.workspace]
+members = ["app"]
 
 [build-system]
 requires = ["hatchling"]

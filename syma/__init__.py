@@ -22,6 +22,14 @@ SPECIAL_POWER_TOGGLE = 0x10
 SPECIAL_LAND = 0x08
 SPECIAL_CALIBRATE = 0x20
 
+# The official app sends a packet every ~40 ms and keeps a pressed button's
+# command in the packets for about a second
+COMMAND_HZ = 25
+COMMAND_HOLD = 1.0
+
+# The drone stays locked (lights flashing, ignores steering) until a client
+# completes the TCP :8888 handshake; see syma.handshake.
+
 # Lift/auto-takeoff is encoded as trim_throttle=0x60, not via the special byte
 LIFT_TRIM_THROTTLE = 0x60
 
